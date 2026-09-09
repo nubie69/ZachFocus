@@ -1,4 +1,4 @@
-import {
+﻿import {
   act,
   cleanup,
   fireEvent,
@@ -33,10 +33,13 @@ describe("ZachFocus interface", () => {
     fireEvent.click(screen.getByRole("button", { name: "Reset timer" }));
     expect(screen.getByRole("timer").textContent).toBe("25:00");
     fireEvent.click(screen.getByRole("button", { name: "Add task" }));
-    fireEvent.change(screen.getByRole("textbox"), {
+    fireEvent.change(screen.getByLabelText("What are you working on?"), {
       target: { value: "Finish portfolio" },
     });
-    fireEvent.keyDown(screen.getByRole("textbox"), { code: "Space", key: " " });
+    fireEvent.keyDown(screen.getByLabelText("What are you working on?"), {
+      code: "Space",
+      key: " ",
+    });
     expect(screen.getByRole("button", { name: "Start focus" })).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Save task" }));
     expect(readStorage("task", "")).toBe("Finish portfolio");

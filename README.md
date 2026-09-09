@@ -10,6 +10,7 @@ A modern, frontend-only Pomodoro productivity timer by **Zach Gelacio**. Work in
 - Focus, short break, and long break modes with custom durations (1–120 minutes)
 - Configurable long-break interval and optional automatic starts
 - Daily focus totals, session history, goals, and calendar-day streaks
+- Task list with add, edit, complete, delete, and focus selection, saved locally
 - Simple current-task editor
 - Gentle completion chime and opt-in browser notifications
 - Dark and light themes, responsive interface, keyboard-accessible settings

@@ -1039,6 +1039,118 @@ footer strong {
     translate: 0 0;
   }
 }
+.task-list {
+  margin-top: 32px;
+  padding: 24px 26px;
+}
+.task-list .section-heading svg {
+  color: var(--muted);
+}
+.task-add-form {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+.task-add-form input,
+.task-edit-form input {
+  min-width: 0;
+  flex: 1;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 11px 13px;
+  font-size: 14px;
+}
+.task-add-form .primary-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.task-list-empty {
+  margin-top: 19px;
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+.task-items {
+  list-style: none;
+  padding: 0;
+  margin: 18px 0 0;
+}
+.task-item {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 12px 8px;
+  border-top: 1px solid var(--line);
+}
+.task-active {
+  background: var(--accent-wash);
+  border-radius: 8px;
+}
+.task-checkbox {
+  width: 19px;
+  height: 19px;
+  flex-shrink: 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+.task-item-title {
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+.task-item-title small {
+  display: block;
+  color: var(--accent);
+  font-size: 12px;
+  margin-top: 4px;
+}
+.task-completed .task-item-title > span {
+  text-decoration: line-through;
+  color: var(--muted);
+}
+.task-completed .task-item-title small {
+  color: var(--muted);
+}
+.task-item-actions,
+.task-edit-form {
+  display: flex;
+  align-items: center;
+}
+.task-edit-form {
+  flex: 1;
+  min-width: 0;
+  gap: 3px;
+}
+.task-list .field-error {
+  margin-top: 10px;
+}
+@media (max-width: 700px) {
+  .task-list {
+    padding: 22px 16px;
+    margin-top: 25px;
+  }
+  .task-item {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .task-item-actions {
+    margin-left: auto;
+  }
+  .task-item-title {
+    flex-basis: calc(100% - 35px);
+  }
+  .task-edit-form {
+    flex-wrap: wrap;
+  }
+  .task-edit-form input {
+    width: 100%;
+    flex-basis: 100%;
+  }
+}
 @keyframes breathe {
   50% {
     opacity: 0.4;

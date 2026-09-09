@@ -3,6 +3,7 @@ import { Zap, ShieldCheck } from "lucide-react";
 import Header from "../components/Header";
 import Timer from "../components/Timer";
 import CurrentTask from "../components/CurrentTask";
+import TaskList from "../components/TaskList";
 import DailyStats from "../components/DailyStats";
 import SessionHistory from "../components/SessionHistory";
 import SettingsModal from "../components/SettingsModal";
@@ -196,6 +197,7 @@ export default function Home() {
             onSettings={() => setSettingsOpen(true)}
           />
         </div>
+        <TaskList currentTask={task} onFocus={setTask} />
         <SessionHistory history={recent} today={today} />
         <section className="about">
           <div>
