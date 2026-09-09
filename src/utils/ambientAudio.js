@@ -1,5 +1,5 @@
 export const ambientModes = ["silence", "rain", "cafe", "white", "keyboard"];
-export const ambientDefaults = { mode: "silence", volume: 35 };
+export const ambientDefaults = { mode: "silence", volume: 25 };
 export function validAmbient(value) {
   return (
     value &&
@@ -15,16 +15,26 @@ export function createSoundscape(mode, sampleRate = 22050, seconds = 30) {
   if (!ambientModes.includes(mode) || mode === "silence")
     throw new Error("Choose an audible soundscape.");
   const length = Math.floor(sampleRate * seconds);
-  const fade = Math.min(Math.floor(sampleRate * 0.2), Math.floor(length / 4));
+  const fade = Math.min(Math.floor(sampleRate * 1.2), Math.floor(length / 4));
   const samples = new Float32Array(length + fade);
   let low = 0,
     medium = 0,
     keyEnvelope = 0,
     keyTone = 0,
+    keyAge = 0,
     nextKey = 0;
   let clink = 0,
-    clinkTone = 1700,
-    nextClink = sampleRate * 2;
+    clinkTone = 850,
+    clinkAge = 0,
+    nextClink = sampleRate * 5;
+  // Two gentle low-pass stages remove sharp hiss and percussive edges.
+  const cutoff = { rain: 950, white: 700, cafe: 650, keyboard: 800 }[mode];
+  const warmth = 1 - Math.exp((-2 * Math.PI * cutoff) / sampleRate);
+  let softened = 0,
+    rounded = 0,
+    dc = 0;
+  const keyDecay = Math.exp(-1 / (sampleRate * 0.032));
+  const clinkDecay = Math.exp(-1 / (sampleRate * 0.18));
   const voices = Array.from({ length: 6 }, (_, i) => ({
     low: 0,
     phase: Math.random() * Math.PI * 2,
@@ -36,15 +46,15 @@ export function createSoundscape(mode, sampleRate = 22050, seconds = 30) {
     low += 0.025 * (noise - low);
     medium += 0.24 * (noise - medium);
     let value = 0;
-    if (mode === "white") value = noise * 0.32;
+    if (mode === "white") value = medium * 0.12 + low * 1.25;
     if (mode === "rain")
       value =
-        (noise * 0.18 + medium * 0.5 + low * 1.4) *
-        (0.8 + 0.12 * Math.sin(time * 0.47) + 0.08 * Math.sin(time * 1.13));
+        (medium * 0.18 + low * 1.6) *
+        (0.9 + 0.06 * Math.sin(time * 0.13) + 0.04 * Math.sin(time * 0.23));
     if (mode === "cafe") {
       // A soft crowd-like murmur and occasional ceramic clinks, without speech.
       for (const voice of voices) {
-        voice.low += 0.07 * (Math.random() * 2 - 1 - voice.low);
+        voice.low += 0.035 * (Math.random() * 2 - 1 - voice.low);
         const syllable = Math.max(
           0,
           Math.sin(time * Math.PI * 2 * voice.rate + voice.phase),
@@ -52,37 +62,48 @@ export function createSoundscape(mode, sampleRate = 22050, seconds = 30) {
         value +=
           voice.low *
           syllable *
-          (0.09 + 0.06 * Math.sin(time * 19 + voice.phase));
+          (0.065 + 0.015 * Math.sin(time * 5 + voice.phase));
       }
-      value += low * 0.5;
+      value += low * 0.8;
       if (i >= nextClink) {
-        clink = 0.055;
-        clinkTone = 1500 + Math.random() * 1400;
-        nextClink = i + sampleRate * (2 + Math.random() * 5);
+        clink = 0.006;
+        clinkAge = 0;
+        clinkTone = 420 + Math.random() * 240;
+        nextClink = i + sampleRate * (10 + Math.random() * 10);
       }
       value +=
         clink *
-        (Math.sin(time * clinkTone * Math.PI * 2) +
-          0.4 * Math.sin(time * clinkTone * 2.73 * Math.PI * 2));
-      clink *= Math.exp(-1 / (sampleRate * 0.1));
+        (1 - Math.exp(-clinkAge / (sampleRate * 0.012))) *
+        (Math.sin((clinkAge / sampleRate) * clinkTone * Math.PI * 2) +
+          0.15 *
+            Math.sin((clinkAge / sampleRate) * clinkTone * 1.6 * Math.PI * 2));
+      clinkAge++;
+      clink *= clinkDecay;
     }
     if (mode === "keyboard") {
       if (i >= nextKey) {
-        keyEnvelope = 0.2 + Math.random() * 0.12;
-        keyTone = 160 + Math.random() * 340;
+        keyEnvelope = 0.1 + Math.random() * 0.035;
+        keyAge = 0;
+        keyTone = 85 + Math.random() * 60;
         nextKey =
           i +
           sampleRate *
-            (Math.random() < 0.1
-              ? 0.6 + Math.random()
-              : 0.075 + Math.random() * 0.14);
+            (Math.random() < 0.22
+              ? 1.5 + Math.random() * 2
+              : 0.18 + Math.random() * 0.22);
       }
       value =
         keyEnvelope *
-        (noise * 0.6 + Math.sin(time * keyTone * Math.PI * 2) * 0.4);
-      keyEnvelope *= Math.exp(-1 / (sampleRate * 0.009));
+        (1 - Math.exp(-keyAge / (sampleRate * 0.009))) *
+        (medium * 0.7 +
+          Math.sin((keyAge / sampleRate) * keyTone * Math.PI * 2) * 0.3);
+      keyAge++;
+      keyEnvelope *= keyDecay;
     }
-    samples[i] = Math.max(-0.8, Math.min(0.8, value));
+    softened += warmth * (value - softened);
+    rounded += warmth * (softened - rounded);
+    dc += 0.001 * (rounded - dc);
+    samples[i] = Math.max(-0.8, Math.min(0.8, rounded - dc));
   }
   // Blend the loop boundary so switching from its end to its start is smooth.
   for (let i = 0; i < fade; i++) {
@@ -93,21 +114,46 @@ export function createSoundscape(mode, sampleRate = 22050, seconds = 30) {
 }
 
 export function createAmbientPlayer(onStateChange = () => {}) {
-  let context, gain, source;
+  let context, gain, source, envelope;
   let revision = 0;
   const buffers = new Map();
-  const stopSource = () => {
+  const retiring = new Set();
+  const stopSource = (suspendAfter = false) => {
     if (source) {
-      source.stop();
-      source.disconnect();
+      const oldSource = source,
+        oldEnvelope = envelope,
+        stoppedRevision = revision;
+      retiring.add(oldSource);
+      if (oldEnvelope.gain.cancelAndHoldAtTime)
+        oldEnvelope.gain.cancelAndHoldAtTime(context.currentTime);
+      else {
+        const level = oldEnvelope.gain.value;
+        oldEnvelope.gain.cancelScheduledValues(context.currentTime);
+        oldEnvelope.gain.setValueAtTime(level, context.currentTime);
+      }
+      oldEnvelope.gain.linearRampToValueAtTime(0, context.currentTime + 0.3);
+      oldSource.onended = () => {
+        oldSource.disconnect();
+        oldEnvelope.disconnect();
+        retiring.delete(oldSource);
+        if (suspendAfter && stoppedRevision === revision)
+          void context.suspend().catch(() => {});
+      };
+      oldSource.stop(context.currentTime + 0.32);
       source = null;
+      envelope = null;
+    } else if (suspendAfter && context) {
+      void context.suspend().catch(() => {});
     }
   };
   return {
     async play(mode, volume) {
       const request = ++revision;
-      stopSource();
-      if (mode === "silence") return false;
+      stopSource(mode === "silence");
+      if (mode === "silence") {
+        onStateChange(false);
+        return false;
+      }
       if (!ambientModes.includes(mode)) throw new Error("Unknown soundscape.");
       const Audio = window.AudioContext || window.webkitAudioContext;
       if (!Audio)
@@ -132,12 +178,15 @@ export function createAmbientPlayer(onStateChange = () => {}) {
       source = context.createBufferSource();
       source.buffer = buffers.get(mode);
       source.loop = true;
-      source.connect(gain);
-      gain.gain.cancelScheduledValues(context.currentTime);
-      gain.gain.setValueAtTime(0, context.currentTime);
-      gain.gain.linearRampToValueAtTime(
+      envelope = context.createGain();
+      source.connect(envelope);
+      envelope.connect(gain);
+      envelope.gain.setValueAtTime(0, context.currentTime);
+      envelope.gain.linearRampToValueAtTime(1, context.currentTime + 1.6);
+      gain.gain.setTargetAtTime(
         Math.max(0, Math.min(volume, 100)) / 100,
-        context.currentTime + 0.15,
+        context.currentTime,
+        0.2,
       );
       source.start();
       onStateChange(true);
@@ -148,18 +197,27 @@ export function createAmbientPlayer(onStateChange = () => {}) {
         gain.gain.setTargetAtTime(
           Math.max(0, Math.min(volume, 100)) / 100,
           context.currentTime,
-          0.04,
+          0.2,
         );
     },
     pause() {
       revision++;
-      stopSource();
+      stopSource(true);
       onStateChange(false);
-      if (context) void context.suspend().catch(() => {});
     },
     dispose() {
       revision++;
-      stopSource();
+      if (source) {
+        source.stop();
+        source.disconnect();
+        envelope.disconnect();
+        source = null;
+      }
+      for (const old of retiring) {
+        old.onended = null;
+        old.disconnect();
+      }
+      retiring.clear();
       if (context) {
         context.onstatechange = null;
         void context.close().catch(() => {});

@@ -33,7 +33,9 @@ function mockAudio(resume) {
   const sources = [];
   const gain = {
     connect: vi.fn(),
+    disconnect: vi.fn(),
     gain: {
+      cancelAndHoldAtTime: vi.fn(),
       cancelScheduledValues: vi.fn(),
       setValueAtTime: vi.fn(),
       linearRampToValueAtTime: vi.fn(),
@@ -75,13 +77,19 @@ it("switches a single looping source, controls volume, pauses, and releases audi
   const player = createAmbientPlayer();
   expect(await player.play("rain", 35)).toBe(true);
   expect(sources[0].loop).toBe(true);
-  expect(gain.gain.linearRampToValueAtTime).toHaveBeenCalledWith(0.35, 0.15);
+  expect(gain.gain.linearRampToValueAtTime).toHaveBeenCalledWith(1, 1.6);
+  expect(gain.gain.setTargetAtTime).toHaveBeenCalledWith(0.35, 0, 0.2);
   await player.play("keyboard", 50);
   expect(sources[0].stop).toHaveBeenCalledTimes(1);
+  expect(sources[0].stop).toHaveBeenCalledWith(0.32);
+  expect(gain.gain.linearRampToValueAtTime).toHaveBeenCalledWith(0, 0.3);
+  sources[0].onended();
+  expect(context.suspend).not.toHaveBeenCalled();
   player.setVolume(20);
-  expect(gain.gain.setTargetAtTime).toHaveBeenCalledWith(0.2, 0, 0.04);
+  expect(gain.gain.setTargetAtTime).toHaveBeenCalledWith(0.2, 0, 0.2);
   player.pause();
   expect(sources[1].stop).toHaveBeenCalledTimes(1);
+  sources[1].onended();
   expect(context.suspend).toHaveBeenCalled();
   player.dispose();
   expect(context.close).toHaveBeenCalled();
@@ -101,4 +109,19 @@ it("cancels a pending start when silence or pause is selected", async () => {
   expect(await pending).toBe(false);
   expect(sources).toHaveLength(0);
   player.dispose();
+});
+
+it("softens sharp sample changes without flattening the soundscapes", () => {
+  for (const mode of ["rain", "cafe", "white", "keyboard"]) {
+    const samples = createSoundscape(mode, 22050, 1);
+    let energy = 0,
+      differences = 0;
+    for (let i = 1; i < samples.length; i++) {
+      energy += samples[i] ** 2;
+      differences += (samples[i] - samples[i - 1]) ** 2;
+    }
+    expect(energy).toBeGreaterThan(0.001);
+    // Unfiltered white noise has a difference/energy ratio near 2.
+    expect(differences / energy).toBeLessThan(0.15);
+  }
 });

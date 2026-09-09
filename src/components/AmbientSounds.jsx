@@ -47,9 +47,11 @@ export default function AmbientSounds() {
     setError("");
     setPlaying(false);
     try {
-      const started = await player.current.play(mode, volume.current);
+      const startingVolume = volume.current;
+      const started = await player.current.play(mode, startingVolume);
       if (request === requestId.current) {
-        player.current.setVolume(volume.current);
+        if (volume.current !== startingVolume)
+          player.current.setVolume(volume.current);
         setPlaying(started);
       }
     } catch (reason) {
@@ -86,7 +88,7 @@ export default function AmbientSounds() {
         </span>
       </div>
       <p className="ambient-description">
-        Set the mood for your next focus session.
+        Rain at the window, a quiet café, and soft sounds to feel at home.
       </p>
       <div className="ambient-options" aria-label="Ambient sound selection">
         {options.map(({ id, label, Icon }) => (

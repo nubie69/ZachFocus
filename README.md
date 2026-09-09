@@ -64,6 +64,8 @@ Or deploy from the project folder with the Vercel CLI. After deployment, use the
 
 ## Usage and data behavior
 
+- Ambient sounds have a warm, indoor character: muffled rain, distant café murmur, deeply filtered noise, and muted keyboard taps. Sounds ease in over 1.6 seconds and fade out when paused or switched. The “White noise” preset is intentionally filtered for a softer tone, rather than spectrally flat white noise.
+
 - Ambient soundscapes are original Web Audio synthesis (including a café-style murmur and clinks, not recorded conversations). They need no external audio files, streaming services, or network access. Choose a sound to start; Play/Pause and volume are independent of the timer. Silence stops playback. Your sound and volume preferences are saved, but reloading never starts audio automatically.
 
 - **Space** starts or pauses, **R** resets, and **S** skips. Shortcuts do not intercept typing or focused interactive controls.
