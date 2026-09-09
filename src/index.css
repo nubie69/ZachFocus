@@ -1043,6 +1043,93 @@ footer strong {
   margin-top: 32px;
   padding: 24px 26px;
 }
+.ambient-card {
+  margin-top: 28px;
+  padding: 24px 26px;
+}
+.ambient-card .section-heading svg {
+  color: var(--accent);
+}
+.ambient-description {
+  color: var(--muted);
+  font-size: 14px;
+  margin-top: 8px;
+}
+.ambient-options {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  margin: 20px 0;
+}
+.ambient-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 17px 6px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--muted);
+  font-size: 14px;
+}
+.ambient-option:hover {
+  background: var(--panel-hover);
+}
+.ambient-option.selected {
+  border-color: var(--accent);
+  background: var(--accent-wash);
+  color: var(--accent);
+}
+.ambient-controls {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  color: var(--muted);
+}
+.ambient-play {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-width: 92px;
+}
+.ambient-play:disabled {
+  opacity: 0.45;
+}
+.ambient-controls input {
+  min-width: 0;
+  flex: 1;
+  accent-color: var(--accent);
+  cursor: pointer;
+  height: 28px;
+}
+.ambient-volume {
+  min-width: 38px;
+  font-size: 13px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.ambient-card .field-error {
+  margin-top: 12px;
+}
+@media (max-width: 700px) {
+  .ambient-card {
+    padding: 22px 16px;
+  }
+  .ambient-options {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .ambient-controls {
+    gap: 9px;
+  }
+  .ambient-play {
+    min-width: 76px;
+    padding: 12px 10px;
+  }
+}
 .task-list .section-heading svg {
   color: var(--muted);
 }

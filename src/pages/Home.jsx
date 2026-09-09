@@ -4,6 +4,7 @@ import Header from "../components/Header";
 import Timer from "../components/Timer";
 import CurrentTask from "../components/CurrentTask";
 import TaskList from "../components/TaskList";
+import AmbientSounds from "../components/AmbientSounds";
 import DailyStats from "../components/DailyStats";
 import SessionHistory from "../components/SessionHistory";
 import SettingsModal from "../components/SettingsModal";
@@ -197,6 +198,7 @@ export default function Home() {
             onSettings={() => setSettingsOpen(true)}
           />
         </div>
+        <AmbientSounds />
         <TaskList currentTask={task} onFocus={setTask} />
         <SessionHistory history={recent} today={today} />
         <section className="about">

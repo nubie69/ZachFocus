@@ -13,6 +13,7 @@ A modern, frontend-only Pomodoro productivity timer by **Zach Gelacio**. Work in
 - Task list with add, edit, complete, delete, and focus selection, saved locally
 - Simple current-task editor
 - Gentle completion chime and opt-in browser notifications
+- Ambient rain, café, white noise, keyboard, or silence with volume control
 - Dark and light themes, responsive interface, keyboard-accessible settings
 - LocalStorage persistence with validation and graceful fallback
 - Reduced-motion support and browser tab countdown
@@ -62,6 +63,8 @@ Tests cover exact pause/resume timing, throttled-tab recovery, timer cleanup, cy
 Or deploy from the project folder with the Vercel CLI. After deployment, use the resulting URL for your portfolio’s **Live Demo** button and your repository URL for **GitHub**.
 
 ## Usage and data behavior
+
+- Ambient soundscapes are original Web Audio synthesis (including a café-style murmur and clinks, not recorded conversations). They need no external audio files, streaming services, or network access. Choose a sound to start; Play/Pause and volume are independent of the timer. Silence stops playback. Your sound and volume preferences are saved, but reloading never starts audio automatically.
 
 - **Space** starts or pauses, **R** resets, and **S** skips. Shortcuts do not intercept typing or focused interactive controls.
 - Only fully completed focus sessions count toward history, daily goals, and streaks. Skips advance to a break without awarding a completed session; four actual completions unlock the default long break.
