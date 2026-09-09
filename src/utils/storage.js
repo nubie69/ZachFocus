@@ -46,6 +46,8 @@ export function validHistory(value) {
         typeof item.id === "string" &&
         Number.isFinite(item.minutes) &&
         item.minutes > 0 &&
+        (item.note === undefined ||
+          (typeof item.note === "string" && item.note.length <= 280)) &&
         Number.isFinite(new Date(item.endedAt).getTime()),
     )
   );

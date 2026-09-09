@@ -52,3 +52,46 @@ it("rejects empty names and falls back from malformed saved task lists", () => {
   );
   expect(readStorage("tasks", null)).toEqual([]);
 });
+it("saves task priority and lets it be changed without changing the focused task", () => {
+  const { unmount } = render(<Harness />);
+  fireEvent.change(screen.getByLabelText("New task"), {
+    target: { value: "Ship homepage" },
+  });
+  fireEvent.change(screen.getByLabelText("New task priority"), {
+    target: { value: "high" },
+  });
+  fireEvent.click(screen.getByLabelText("Add to task list"));
+  expect(readStorage("tasks", [])[0].priority).toBe("high");
+  fireEvent.click(screen.getByLabelText("Focus on Ship homepage"));
+  fireEvent.change(screen.getByLabelText("Priority for Ship homepage"), {
+    target: { value: "low" },
+  });
+  expect(screen.getByTestId("current-task").textContent).toBe("Ship homepage");
+  expect(readStorage("tasks", [])[0].priority).toBe("low");
+  unmount();
+  render(<Harness />);
+  expect(screen.getByLabelText("Priority for Ship homepage").value).toBe("low");
+});
+it("preserves older tasks and defaults missing or invalid priorities to medium", () => {
+  localStorage.setItem(
+    "zachfocus:tasks",
+    JSON.stringify([
+      { id: "legacy", title: "Existing task", completed: false },
+      {
+        id: "invalid",
+        title: "Finished task",
+        completed: true,
+        priority: "unknown",
+      },
+    ]),
+  );
+  render(<Harness />);
+  expect(screen.getByLabelText("Priority for Existing task").value).toBe(
+    "medium",
+  );
+  expect(screen.getByLabelText("Complete Finished task").checked).toBe(true);
+  expect(readStorage("tasks", []).map((task) => task.priority)).toEqual([
+    "medium",
+    "medium",
+  ]);
+});

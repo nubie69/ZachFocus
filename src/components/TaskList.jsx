@@ -1,6 +1,26 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ListTodo, Plus, Pencil, Trash2, Target, Check, X } from "lucide-react";
 import { useLocalStorage } from "../hooks/useLocalStorage";
+
+const priorities = ["high", "medium", "low"];
+const taskPriority = (task) =>
+  priorities.includes(task.priority) ? task.priority : "medium";
+function PrioritySelect({ value, onChange, label }) {
+  return (
+    <select
+      className={`task-priority priority-${value}`}
+      aria-label={label}
+      value={value}
+      onChange={(event) => onChange(event.target.value)}
+    >
+      {priorities.map((priority) => (
+        <option key={priority} value={priority}>
+          {priority[0].toUpperCase() + priority.slice(1)} priority
+        </option>
+      ))}
+    </select>
+  );
+}
 
 export function validTasks(value) {
   return (
@@ -25,6 +45,14 @@ export default function TaskList({ currentTask, onFocus }) {
     validTasks,
   );
   const [draft, setDraft] = useState("");
+  const [priority, setPriority] = useState("medium");
+  useEffect(() => {
+    if (tasks.some((task) => !priorities.includes(task.priority))) {
+      setTasks((previous) =>
+        previous.map((task) => ({ ...task, priority: taskPriority(task) })),
+      );
+    }
+  }, [tasks, setTasks]);
   const [editingId, setEditingId] = useState(null);
   const [editDraft, setEditDraft] = useState("");
   const [error, setError] = useState("");
@@ -45,9 +73,15 @@ export default function TaskList({ currentTask, onFocus }) {
     }
     setTasks((previous) => [
       ...previous,
-      { id: crypto.randomUUID(), title: draft.trim(), completed: false },
+      {
+        id: crypto.randomUUID(),
+        title: draft.trim(),
+        completed: false,
+        priority,
+      },
     ]);
     setDraft("");
+    setPriority("medium");
     setError("");
   };
   const updateTitle = (event, task) => {
@@ -90,6 +124,11 @@ export default function TaskList({ currentTask, onFocus }) {
             setDraft(event.target.value);
             setError("");
           }}
+        />
+        <PrioritySelect
+          label="New task priority"
+          value={priority}
+          onChange={setPriority}
         />
         <button className="primary-button" aria-label="Add to task list">
           <Plus size={18} />
@@ -175,6 +214,21 @@ export default function TaskList({ currentTask, onFocus }) {
                       <small>Currently focusing</small>
                     )}
                     {task.completed && <small>Completed</small>}
+                    <div className="task-priority-row">
+                      <PrioritySelect
+                        label={`Priority for ${task.title}`}
+                        value={taskPriority(task)}
+                        onChange={(value) =>
+                          setTasks((previous) =>
+                            previous.map((item) =>
+                              item.id === task.id
+                                ? { ...item, priority: value }
+                                : item,
+                            ),
+                          )
+                        }
+                      />
+                    </div>
                   </div>
                   <div className="task-item-actions">
                     {!task.completed && (

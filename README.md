@@ -10,7 +10,9 @@ A modern, frontend-only Pomodoro productivity timer by **Zach Gelacio**. Work in
 - Focus, short break, and long break modes with custom durations (1–120 minutes)
 - Configurable long-break interval and optional automatic starts
 - Daily focus totals, session history, goals, and calendar-day streaks
+- Optional session notes after each completed Pomodoro, editable in history
 - Task list with add, edit, complete, delete, and focus selection, saved locally
+- Low, Medium, and High task priorities, selectable on creation and changeable later
 - Simple current-task editor
 - Gentle completion chime and opt-in browser notifications
 - Ambient rain, café, white noise, keyboard, or silence with volume control
@@ -63,6 +65,8 @@ Tests cover exact pause/resume timing, throttled-tab recovery, timer cleanup, cy
 Or deploy from the project folder with the Vercel CLI. After deployment, use the resulting URL for your portfolio’s **Live Demo** button and your repository URL for **GitHub**.
 
 ## Usage and data behavior
+
+- After a completed focus session, add an optional note of up to 280 characters or choose **Maybe later**. Notes stay with their session in local history for 30 days. Use **Add note** or **Edit note** in history; saving an empty note clears it. The prompt does not pause automatic breaks or focus sessions, and skips/breaks never trigger it. Unsaved drafts last only until the page is refreshed.
 
 - Ambient sounds have a warm, indoor character: muffled rain, distant café murmur, deeply filtered noise, and muted keyboard taps. Sounds ease in over 1.6 seconds and fade out when paused or switched. The “White noise” preset is intentionally filtered for a softer tone, rather than spectrally flat white noise.
 

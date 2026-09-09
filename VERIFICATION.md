@@ -4,6 +4,8 @@ ZachFocus includes automated tests for timer and interface behavior. Run `npm te
 
 ## Automated coverage
 
+- Session note creation, editing, clearing, persistence, deferral, and correct attribution across automatic cycles
+
 - Ambient selection and volume persistence without autoplay; audio error handling
 - Bounded synthesized audio, single-source switching, cancellation of pending starts, pause, and cleanup
 

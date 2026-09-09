@@ -22,6 +22,91 @@ describe("ZachFocus interface", () => {
     cleanup();
     vi.useRealTimers();
   });
+  it("saves session notes, restores them after reload, and supports editing and clearing", () => {
+    writeStorage("settings", { ...defaults, focus: 1, sound: false });
+    const { unmount } = render(<Home />);
+    fireEvent.click(screen.getByRole("button", { name: "Start focus" }));
+    act(() => vi.advanceTimersByTime(60000));
+    const note = screen.getByLabelText("What did you accomplish?");
+    expect(note.maxLength).toBe(280);
+    fireEvent.change(note, {
+      target: { value: "Finished homepage redesign." },
+    });
+    fireEvent.keyDown(note, { key: "s" });
+    expect(
+      screen
+        .getByRole("button", { name: "Short Break" })
+        .getAttribute("aria-pressed"),
+    ).toBe("true");
+    fireEvent.click(screen.getByRole("button", { name: "Save note" }));
+    expect(readStorage("history", [])[0].note).toBe(
+      "Finished homepage redesign.",
+    );
+    unmount();
+    render(<Home />);
+    expect(screen.getByText("Finished homepage redesign.")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: /^Edit note for/ }));
+    fireEvent.change(screen.getByLabelText("What did you accomplish?"), {
+      target: { value: "Homepage and footer done." },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Save note" }));
+    expect(readStorage("history", [])[0].note).toBe(
+      "Homepage and footer done.",
+    );
+    fireEvent.click(screen.getByRole("button", { name: /^Edit note for/ }));
+    fireEvent.change(screen.getByLabelText("What did you accomplish?"), {
+      target: { value: "" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Save note" }));
+    expect(readStorage("history", [])[0].note).toBe("");
+    expect(screen.getByRole("button", { name: /^Add note for/ })).toBeTruthy();
+  });
+  it("does not prompt for skipped sessions or breaks, and lets notes be added later", () => {
+    writeStorage("settings", { ...defaults, focus: 1, short: 1, sound: false });
+    render(<Home />);
+    fireEvent.click(screen.getByRole("button", { name: "Skip session" }));
+    expect(screen.queryByLabelText("What did you accomplish?")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Start break" }));
+    act(() => vi.advanceTimersByTime(60000));
+    expect(screen.queryByLabelText("What did you accomplish?")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Start focus" }));
+    act(() => vi.advanceTimersByTime(60000));
+    fireEvent.click(screen.getByRole("button", { name: "Maybe later" }));
+    expect(screen.queryByLabelText("What did you accomplish?")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: /^Add note for/ }));
+    fireEvent.change(screen.getByLabelText("What did you accomplish?"), {
+      target: { value: "Reviewed the design." },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Save note" }));
+    expect(readStorage("history", [])[0].note).toBe("Reviewed the design.");
+  });
+  it("keeps a draft attached to its original session across automatic cycles", () => {
+    writeStorage("settings", {
+      ...defaults,
+      focus: 1,
+      short: 1,
+      autoBreak: true,
+      autoFocus: true,
+      sound: false,
+    });
+    render(<Home />);
+    fireEvent.click(screen.getByRole("button", { name: "Start focus" }));
+    act(() => vi.advanceTimersByTime(60000));
+    fireEvent.change(screen.getByLabelText("What did you accomplish?"), {
+      target: { value: "First session work" },
+    });
+    act(() => vi.advanceTimersByTime(120000));
+    expect(screen.getByLabelText("What did you accomplish?").value).toBe(
+      "First session work",
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Save note" }));
+    const history = readStorage("history", []);
+    expect(history).toHaveLength(2);
+    expect(history[0].note).toBe("First session work");
+    expect(history[1].note).toBe("");
+    expect(screen.getByLabelText("What did you accomplish?").value).toBe("");
+    expect(screen.getByRole("button", { name: "Pause" })).toBeTruthy();
+  });
   it("runs controls, updates the tab title, and preserves a task on reload", () => {
     const { unmount } = render(<Home />);
     fireEvent.click(screen.getByRole("button", { name: "Start focus" }));

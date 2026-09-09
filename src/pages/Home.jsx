@@ -7,6 +7,7 @@ import TaskList from "../components/TaskList";
 import AmbientSounds from "../components/AmbientSounds";
 import DailyStats from "../components/DailyStats";
 import SessionHistory from "../components/SessionHistory";
+import SessionNoteEditor from "../components/SessionNoteEditor";
 import SettingsModal from "../components/SettingsModal";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import { useTimer } from "../hooks/useTimer";
@@ -62,23 +63,27 @@ export default function Home() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [today, setToday] = useState(localDate());
   const [message, setMessage] = useState("");
+  const [pendingNotes, setPendingNotes] = useState([]);
   const timer = useTimer(settings, (mode, minutes, completedAt) => {
     const text =
       mode === "focus"
         ? "Focus session complete! Time for a break."
         : "Break finished! Ready to focus?";
     if (mode === "focus") {
+      const id = crypto.randomUUID();
       setHistory((previous) =>
         recentHistory([
           ...previous,
           {
-            id: crypto.randomUUID(),
+            id,
             endedAt: completedAt.toISOString(),
             minutes,
             task,
+            note: "",
           },
         ]),
       );
+      setPendingNotes((previous) => [...previous, id]);
       setStreakRecord((previous) => completeStreak(previous, completedAt));
     }
     setToday(localDate());
@@ -143,6 +148,21 @@ export default function Home() {
   const recent = recentHistory(history);
   const todays = recent.filter((s) => localDate(new Date(s.endedAt)) === today);
   const streak = currentStreak(streakRecord);
+  const pendingSession = pendingNotes
+    .map((id) => recent.find((session) => session.id === id))
+    .find(Boolean);
+  const dismissNote = (id) =>
+    setPendingNotes((previous) => previous.filter((item) => item !== id));
+  const saveNote = (id, note) => {
+    setHistory((previous) =>
+      previous.map((session) =>
+        session.id === id
+          ? { ...session, note: note.trim().slice(0, 280) }
+          : session,
+      ),
+    );
+    dismissNote(id);
+  };
   return (
     <div className="app-shell">
       <Header
@@ -184,6 +204,27 @@ export default function Home() {
           <div className="focus-column">
             <Timer timer={timer} settings={settings} onToggle={onToggle} />
             <CurrentTask task={task} setTask={setTask} />
+            {pendingSession && (
+              <section
+                className="panel session-note-prompt"
+                aria-labelledby="session-note-heading"
+              >
+                <h2 id="session-note-heading">
+                  Focus complete. Capture a small win.
+                </h2>
+                <p className="note-prompt-description" role="status">
+                  Your {pendingSession.minutes}-minute session is saved. Add a
+                  note before you move on.
+                </p>
+                <SessionNoteEditor
+                  key={pendingSession.id}
+                  note={pendingSession.note}
+                  onSave={(note) => saveNote(pendingSession.id, note)}
+                  onCancel={() => dismissNote(pendingSession.id)}
+                  cancelLabel="Maybe later"
+                />
+              </section>
+            )}
             <div className="keyboard-hint">
               <kbd>Space</kbd> start / pause<span>·</span>
               <kbd>R</kbd> reset<span>·</span>
@@ -200,7 +241,7 @@ export default function Home() {
         </div>
         <AmbientSounds />
         <TaskList currentTask={task} onFocus={setTask} />
-        <SessionHistory history={recent} today={today} />
+        <SessionHistory history={recent} today={today} onSaveNote={saveNote} />
         <section className="about">
           <div>
             <h2>

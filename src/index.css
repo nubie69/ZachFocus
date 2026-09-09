@@ -1043,6 +1043,77 @@ footer strong {
   margin-top: 32px;
   padding: 24px 26px;
 }
+.session-note-prompt {
+  padding: 22px;
+  margin-top: 16px;
+  border-color: var(--accent);
+}
+.note-prompt-description {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.7;
+  margin-top: 8px;
+}
+.session-note-editor {
+  margin-top: 16px;
+}
+.session-note-editor label {
+  display: block;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+.session-note-editor textarea {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  resize: vertical;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 12px;
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.session-note-editor textarea:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+.note-editor-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 12px 0 4px;
+}
+.note-editor-footer > span {
+  font-size: 12px;
+  color: var(--muted);
+}
+.history-entry {
+  border-top: 1px solid var(--line);
+}
+.history-entry > .history-row {
+  border-top: 0;
+}
+.history-entry > .session-note-editor {
+  margin: 0 0 18px;
+}
+.session-note-text {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 14px;
+  line-height: 1.65;
+  margin-top: 10px;
+  color: var(--text);
+}
+.history-note-button {
+  margin-top: 9px;
+  min-height: 28px;
+}
 .ambient-card {
   margin-top: 28px;
   padding: 24px 26px;
@@ -1153,6 +1224,60 @@ footer strong {
   display: flex;
   align-items: center;
   gap: 6px;
+}
+.task-priority {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--bg);
+  font: inherit;
+  font-size: 13px;
+  padding: 9px 10px;
+  min-height: 40px;
+  max-width: 100%;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.task-priority:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+.task-priority option {
+  background: var(--panel);
+  color: var(--text);
+}
+.priority-high {
+  color: #f3acaa;
+  border-color: #f3acaa50;
+}
+.priority-medium {
+  color: #e6c47b;
+  border-color: #e6c47b50;
+}
+.priority-low {
+  color: var(--accent);
+  border-color: var(--line);
+}
+:root[data-theme="light"] .priority-high {
+  color: #a33030;
+  border-color: #a3303040;
+}
+:root[data-theme="light"] .priority-medium {
+  color: #795612;
+  border-color: #79561240;
+}
+.task-priority-row {
+  margin-top: 8px;
+}
+@media (max-width: 700px) {
+  .task-add-form {
+    flex-wrap: wrap;
+  }
+  .task-add-form > input {
+    flex-basis: 100%;
+  }
+  .task-add-form > .task-priority {
+    flex: 1;
+  }
 }
 .task-list-empty {
   margin-top: 19px;
